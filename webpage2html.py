@@ -2,6 +2,10 @@
 # -*- coding: utf-8 -*-
 
 import os, sys, re, base64, urlparse, urllib2, urllib, datetime, glob
+
+reload(sys)  
+sys.setdefaultencoding('utf8')
+
 from bs4 import BeautifulSoup
 import lxml
 import requests
@@ -324,9 +328,11 @@ def main():
     
         for file in glob.glob(args.url):
             rs = generate(file, **kwargs)
-            print(os.path.basename(file))
+            file_name = slugify(unicode(os.path.basename(file),"ISO-8859-1"))
+            output_file = ("%s/%s.html" % (args.output,file_name))
 
-            with open("%s/%s" % (args.output,slugify(unicode(os.path.basename(file)))), "w") as text_file:
+            print("saving output to: [%s]" % output_file)
+            with open(output_file, "w") as text_file:
                 text_file.write(rs)
 
     else:
