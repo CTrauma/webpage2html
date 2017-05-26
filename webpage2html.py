@@ -1,11 +1,13 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 
-import os, sys, re, base64, urlparse, urllib2, urllib, datetime
+import os, sys, re, base64, urlparse, urllib2, urllib, datetime, glob
 from bs4 import BeautifulSoup
 import lxml
 import requests
 import argparse
+from slugify import slugify
+
 
 re_css_url = re.compile('(url\(.*?\))')
 
@@ -296,7 +298,6 @@ examples:
         combine local saved xxx.html with a directory named xxx_files together into a single html file
 """)
 
-
 def main():
     kwargs = {}
     parser = argparse.ArgumentParser()
@@ -305,6 +306,8 @@ def main():
     parser.add_argument('-k', '--insecure', action='store_true', help="ignore the certificate")
     parser.add_argument('--errorpage', action='store_true', help="crawl an error page")
     parser.add_argument("url", help="the website to store")
+    parser.add_argument("output", help="the output path")
+    
     args = parser.parse_args()
     if args.quite:
         kwargs['verbose'] = False
@@ -314,8 +317,26 @@ def main():
         kwargs['verify'] = False
     if args.errorpage:
         kwargs['errorpage'] = True
-    rs = generate(args.url, **kwargs)
-    sys.stdout.write(rs)
+
+    html_doc, extra_data = get(args.url, verbose=args.quite, verify=args.insecure, ignore_error=args.errorpage)
+   
+    if not extra_data:
+    
+        for file in glob.glob(args.url):
+            rs = generate(file, **kwargs)
+            print(os.path.basename(file))
+
+            with open("%s/%s" % (args.output,file), "w") as text_file:
+                text_file.write(rs)
+
+    else:
+        r = slugify(args.url)
+
+        rs = generate(args.url, **kwargs)
+        ##sys.stdout.write(rs)
+
+        with open("%s/%s.html" % (args.output,r), "w") as text_file:
+            text_file.write(rs)
 
 if __name__ == '__main__':
     main()
