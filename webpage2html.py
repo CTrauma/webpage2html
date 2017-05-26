@@ -326,7 +326,7 @@ def main():
             rs = generate(file, **kwargs)
             print(os.path.basename(file))
 
-            with open("%s/%s" % (args.output,os.path.basename(file)), "w") as text_file:
+            with open("%s/%s" % (args.output,slugify(os.path.basename(file))), "w") as text_file:
                 text_file.write(rs)
 
     else:
